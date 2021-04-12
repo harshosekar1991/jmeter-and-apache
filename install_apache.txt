@@ -1,0 +1,98 @@
+********************************************when condition in ansible*************************************************
+
+[root@master ec2-user]# cat -n sample.yml
+     1  ---
+     2   - hosts: slave
+     3     become: no
+     4     gather_facts: yes
+     5     tasks:
+     6     - name: "Populate service facts"
+     7       service_facts:
+     8     - name: "see the service httpd facts as they are"
+     9       debug:
+    10         msg: "{ansible_facts.services['httpd.service'].state}"
+    11     - name: "verify if apache is running!"
+    12       assert:
+    13         that:
+    14           - "'{{ansible_facts.services['httpd.service'].state}}' == 'running'"
+    15         fail_msg: "Apache is down"
+    16         success_msg: "Good to go"
+    17     - name: "read comment from index"
+    18       template:
+    19         src: index.html
+    20         dest: /var/www/html/index.html
+    21       when: "'{{ansible_facts.services['httpd.service'].state}}' == 'running'"
+
+
+
+
+********************************************first Output:if service is not anabled*************************************************
+
+[root@master ec2-user]# ansible-playbook sample.yml
+
+PLAY [slave] ******************************************************************************
+
+TASK [Gathering Facts] ********************************************************************
+[WARNING]: Platform linux on host slave is using the discovered Python interpreter at
+/usr/bin/python, but future installation of another Python interpreter could change this.
+See https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html
+for more information.
+ok: [slave]
+
+TASK [Populate service facts] *************************************************************
+ok: [slave]
+
+TASK [see the service httpd facts as they are] ********************************************
+ok: [slave] => {
+    "msg": "{ansible_facts.services['httpd.service'].state}"
+}
+
+TASK [verify if apache is running!] *******************************************************
+fatal: [slave]: FAILED! => {
+    "assertion": "'inactive' == 'running'",
+    "changed": false,
+    "evaluated_to": false,
+    "msg": "Apache is down"
+}
+
+PLAY RECAP ********************************************************************************
+slave                      : ok=3    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0
+
+
+
+
+
+********************************************second Output: if service is enabled*************************************************
+
+[root@master ec2-user]# ansible-playbook sample.yml
+
+PLAY [slave] ******************************************************************************
+
+TASK [Gathering Facts] ********************************************************************
+[WARNING]: Platform linux on host slave is using the discovered Python interpreter at
+/usr/bin/python, but future installation of another Python interpreter could change this.
+See https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html
+for more information.
+ok: [slave]
+
+TASK [Populate service facts] *************************************************************
+ok: [slave]
+
+TASK [see the service httpd facts as they are] ********************************************
+ok: [slave] => {
+    "msg": "{ansible_facts.services['httpd.service'].state}"
+}
+
+TASK [verify if apache is running!] *******************************************************
+ok: [slave] => {
+    "changed": false,
+    "msg": "Good to go"
+}
+
+TASK [read comment from index] ************************************************************
+[WARNING]: conditional statements should not include jinja2 templating delimiters such as
+{{ }} or {% %}. Found: '{{ansible_facts.services['httpd.service'].state}}' == 'running'
+ok: [slave]
+
+PLAY RECAP ********************************************************************************
+slave                      : ok=5    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0

@@ -1,0 +1,22 @@
+     1  ---
+     2    - name: install java
+     3      hosts: slave
+     4      become: true
+     5      tasks:
+     6      - name: install java on jmeter slave
+     7        yum:
+     8          name: java
+     9          state: present
+    10      - name: Downloading apache-jmeter
+    11        get_url:
+    12          url: "https://mirrors.estointernet.in/apache//jmeter/binaries/apache-jmeter-5.4.1.tgz"
+    13          dest: /usr/local
+    14      - name: Extracting apache-jmeter
+    15        unarchive:
+    16          src: "/usr/local/apache-jmeter-5.4.1.tgz"
+    17          dest: /usr/local
+    18          remote_src: yes
+    19      - name: starting apache-jmeter
+    20        shell: nohup /usr/local/apache-jmeter-5.4.1/bin/jmeter.sh &
+    21        shell: nohup /usr/local/apache-jmeter-5.4.1/bin/jmeter-server -Dserver.rmi.localport=50000 -Dserver_port=1099 -Jserver.rmi.ssl.disable=true &
+    22      - name: download jar file

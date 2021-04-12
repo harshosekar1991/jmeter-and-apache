@@ -1,0 +1,7 @@
+- name: download plugin
+  get_url:
+    url: "https://jmeter-plugins.org/get/"
+    dest: /usr/local/apache-jmeter-5.4.1/lib/ext
+- name: starting apache-jmeter
+  shell: nohup /usr/local/apache-jmeter-5.4.1/bin/jmeter.sh &
+  shell: nohup /usr/local/apache-jmeter-5.4.1/bin/jmeter-server -Dserver.rmi.localport=50000 -Dserver_port=1099 -Jserver.rmi.ssl.disable=true &
