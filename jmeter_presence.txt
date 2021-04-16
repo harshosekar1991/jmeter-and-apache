@@ -1,0 +1,17 @@
+---
+  - name: status check
+    hosts: slave
+    become: true
+    tasks:
+    - name: searching for a string
+      register: presence
+      shell: "grep -i 'apache-jmeter-5.4.1' /home/ec2-user/output"
+    - name: keyword is not matching
+      shell: nohup /usr/local/apache-jmeter-5.4.1/bin/jmeter-server &
+      when: presence is not changed
+    - name: keyword is matching
+      debug: msg="good to go"
+      when: presence is changed
+
+
+**it works only when ps aux | grep jmeter output should be saved in /home/ec2-user/output**
